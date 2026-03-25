@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Acessos VG
 // @namespace    http://tampermonkey.net/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Modal com 5 colunas + Status colorido da planilha
 // @author       Videljr
 // @match        https://vivogestao.vivoempresas.com.br/Portal/*
@@ -66,9 +66,18 @@
                 const status = colunas[7]?.trim().replace(/"/g, '').toUpperCase();
 
                 if (conta && /^\d{10}$/.test(conta)) {
-                    let cor = '#A9A9A9';
-                    if (status === 'OK') cor = '#33CC00';
-                    else if (status && (status.includes('ERROR ASSINCRONO') || status.includes('ESPELHAMENTO') || status.includes('MULTIPLOS ERROS'))) cor = '#CC0000';
+                    let cor = '#A9A9A9'; // Cinza por padrão
+
+                    if (status === 'OK') {
+                        cor = '#33CC00'; // Verde
+                    } else if (status === 'RENOVANDO') {
+                        cor = '#ECD172'; // Amarelo
+                    } else if (status && (status.includes('ERROR ASSINCRONO') ||
+                               status.includes('ESPELHAMENTO') ||
+                               status.includes('MULTIPLOS ERROS'))) {
+                        cor = '#CC0000'; // Vermelho
+                    }
+
                     statusDasContas[conta] = cor;
                 }
             }
@@ -77,9 +86,256 @@
             console.error('❌ Erro ao buscar status:', e);
         }
     }
-        const estilos = `<style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');#vivoLoginModal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);display:flex;justify-content:center;align-items:center;z-index:999999;font-family:'Inter',sans-serif;animation:fadeIn 0.3s ease}@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes fadeOut{from{opacity:1}to{opacity:0}}@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}#vivoLoginModal .modal-content{background:linear-gradient(135deg,#fff 0%,#f8f8f8 100%);border-radius:20px;padding:40px;max-width:1400px;width:95%;max-height:90vh;overflow-y:auto;box-shadow:0 25px 80px rgba(0,0,0,0.4);animation:slideUp 0.4s ease}#vivoLoginModal h2{margin:0 0 10px 0;color:#660099;font-size:32px;font-weight:700;text-align:center}#vivoLoginModal .subtitle{text-align:center;color:#666;margin-bottom:35px;font-size:15px}#vivoLoginModal .colunas-container{display:grid;grid-template-columns:repeat(5,1fr);gap:20px;margin-bottom:25px}#vivoLoginModal .coluna{background:white;border-radius:15px;padding:20px;box-shadow:0 4px 15px rgba(0,0,0,0.08)}#vivoLoginModal .coluna-titulo{font-weight:700;font-size:15px;color:#660099;margin-bottom:15px;padding-bottom:12px;border-bottom:3px solid #660099;text-align:center;text-transform:uppercase;letter-spacing:0.5px}#vivoLoginModal .conta-item{border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all 0.25s ease;position:relative;overflow:hidden;text-align:center;border:2px solid transparent}#vivoLoginModal .conta-item:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,0.2);filter:brightness(0.95)}#vivoLoginModal .conta-item:active{transform:translateY(-1px) scale(0.98)}#vivoLoginModal .conta-nome{font-size:14px;color:white;position:relative;z-index:1;font-weight:400;letter-spacing:0.3px;text-shadow:0 1px 2px rgba(0,0,0,0.2)}#vivoLoginModal .conta-nome .bold{font-weight:700}#vivoLoginModal .close-btn{position:absolute;top:20px;right:20px;background:#f0f0f0;border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:24px;color:#666;display:flex;align-items:center;justify-content:center;transition:all 0.3s ease;z-index:10}#vivoLoginModal .close-btn:hover{background:#660099;color:white;transform:rotate(90deg)}#vivoLoginModal .footer-info{text-align:center;color:#999;font-size:12px;margin-top:25px;padding-top:20px;border-top:1px solid #e0e0e0}#vivoLoginBtn{width:100%;max-width:550px;height:56px;background:linear-gradient(135deg,#660099,#7000A8);border:none;border-radius:8px;cursor:pointer;box-shadow:0 4px 15px rgba(102,0,153,0.3);transition:all 0.3s ease;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:white;margin:20px auto;letter-spacing:0.3px}#vivoLoginBtn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(102,0,153,0.4);background:linear-gradient(135deg,#7000A8,#660099)}#vivoLoginBtn:active{transform:translateY(0px)}@media(max-width:1200px){#vivoLoginModal .colunas-container{grid-template-columns:repeat(3,1fr)}}@media(max-width:768px){#vivoLoginModal .colunas-container{grid-template-columns:repeat(2,1fr)}}@media(max-width:500px){#vivoLoginModal .colunas-container{grid-template-columns:1fr}}</style>`;
+            const estilos = `<style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
 
-    document.head.insertAdjacentHTML('beforeend', estilos);
+        #vivoLoginModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999999;
+            font-family: 'Inter', sans-serif;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #vivoLoginModal .modal-content {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 1400px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+            animation: slideUp 0.4s ease;
+        }
+
+        #vivoLoginModal h2 {
+            margin: 0 0 10px 0;
+            color: #660099;
+            font-size: 32px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        #vivoLoginModal .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 35px;
+            font-size: 15px;
+        }
+
+        #vivoLoginModal .colunas-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        #vivoLoginModal .coluna {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        #vivoLoginModal .coluna-titulo {
+            font-weight: 700;
+            font-size: 15px;
+            color: #660099;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #660099;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* NOVO ESTILO DOS CARDS */
+        #vivoLoginModal .conta-item {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 0;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: stretch;
+            height: 50px;
+        }
+
+        #vivoLoginModal .conta-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            border-color: #660099;
+        }
+
+        #vivoLoginModal .conta-item:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        #vivoLoginModal .conta-nome {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #333;
+            font-weight: 400;
+            letter-spacing: 0.3px;
+            padding: 0 15px;
+        }
+
+        #vivoLoginModal .conta-nome .bold {
+            font-weight: 700;
+        }
+
+        /* INDICADOR DE STATUS */
+        #vivoLoginModal .status-indicator {
+            width: 50px;
+            min-width: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0 8px 8px 0;
+        }
+
+        #vivoLoginModal .status-indicator img {
+            width: 24px;
+            height: 24px;
+            filter: brightness(0) invert(1);
+        }
+
+        #vivoLoginModal .status-indicator.ok {
+            background: #33CC00;
+        }
+
+        #vivoLoginModal .status-indicator.erro {
+            background: #CC0000;
+        }
+
+        #vivoLoginModal .status-indicator.renovando {
+            background: #ECD172;
+        }
+
+        #vivoLoginModal .status-indicator.neutro {
+            background: #A9A9A9;
+        }
+
+        #vivoLoginModal .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #f0f0f0;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        #vivoLoginModal .close-btn:hover {
+            background: #660099;
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        #vivoLoginModal .footer-info {
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        #vivoLoginBtn {
+            width: 100%;
+            max-width: 550px;
+            height: 56px;
+            background: linear-gradient(135deg, #660099, #7000A8);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 0, 153, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            margin: 20px auto;
+            letter-spacing: 0.3px;
+        }
+
+        #vivoLoginBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 0, 153, 0.4);
+            background: linear-gradient(135deg, #7000A8, #660099);
+        }
+
+        #vivoLoginBtn:active {
+            transform: translateY(0px);
+        }
+
+        @media (max-width: 1200px) {
+            #vivoLoginModal .colunas-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            #vivoLoginModal .colunas-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 500px) {
+            #vivoLoginModal .colunas-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>`;
+        document.head.insertAdjacentHTML('beforeend', estilos);
 
     function formatarNomeConta(nome) {
         if (nome.length >= 4) {
@@ -118,14 +374,39 @@
 
         for (const [cnpj, contas] of Object.entries(contasPorCNPJ)) {
             let contasHTML = '';
-            contas.forEach((conta, index) => {
+                                    contas.forEach((conta, index) => {
                 const corFundo = obterCorStatus(conta.nome);
-                contasHTML += `<div class="conta-item" data-cnpj="${cnpj}" data-index="${index}" style="background-color:${corFundo};"><div class="conta-nome">${formatarNomeConta(conta.nome)}</div></div>`;
+                let statusClasse = 'neutro';
+                let statusIcone = 'https://cdn-icons-png.flaticon.com/512/61/61444.png'; // Padrão: interrogação
+
+                if (corFundo === '#33CC00') {
+                    statusClasse = 'ok';
+                    statusIcone = 'https://cdn-icons-png.flaticon.com/512/33/33281.png'; // Check verde
+                } else if (corFundo === '#CC0000') {
+                    statusClasse = 'erro';
+                    statusIcone = 'https://cdn-icons-png.flaticon.com/512/159/159469.png'; // X vermelho
+                } else if (corFundo === '#ECD172') {
+                    statusClasse = 'renovando';
+                    statusIcone = 'https://cdn-icons-png.flaticon.com/512/61/61444.png'; // Interrogação amarela
+                }
+
+                contasHTML += `
+                    <div class="conta-item" data-cnpj="${cnpj}" data-index="${index}">
+                        <div class="conta-nome">${formatarNomeConta(conta.nome)}</div>
+                        <div class="status-indicator ${statusClasse}">
+                            <img src="${statusIcone}" alt="Status">
+                        </div>
+                    </div>
+                `;
             });
             colunasHTML += `<div class="coluna"><div class="coluna-titulo">${cnpj}</div>${contasHTML}</div>`;
         }
 
-        modal.innerHTML = `<div class="modal-content"><button class="close-btn" id="closeModal">×</button><h2>Selecione uma Conta</h2><div class="subtitle">Escolha a conta para fazer login no Vivo Gestão</div><div class="colunas-container">${colunasHTML}</div><div class="footer-info">💡 Verde = OK | Vermelho = Erro | Cinza = Sem informação</div></div>`;
+        modal.innerHTML = `<div class="modal-content"><button class="close-btn" id="closeModal">×</button><h2>Selecione uma Conta</h2><div class="subtitle">Escolha a conta para fazer login no Vivo Gestão</div><div class="colunas-container">${colunasHTML}</div>
+                <div class="footer-info">
+                    💡 Verde = OK | Amarelo = Renovando | Vermelho = Erro | Cinza = Sem informação
+                </div>
+            `;
 
         document.body.appendChild(modal);
 
