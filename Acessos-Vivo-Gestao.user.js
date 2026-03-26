@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         Acessos VG
 // @namespace    http://tampermonkey.net/
-// @version      1.2.1
+// @version      1.2.2
 // @description  Modal com 5 colunas + Status colorido da planilha
 // @author       Videljr
 // @match        https://vivogestao.vivoempresas.com.br/Portal/*
 // @updateURL    https://raw.githubusercontent.com/Videljr/acesso-vivo-gestao-script/main/Acessos-Vivo-Gestao.user.js
 // @downloadURL  https://raw.githubusercontent.com/Videljr/acesso-vivo-gestao-script/main/Acessos-Vivo-Gestao.user.js
+// @updateInterval 3600
 // @grant        none
 // ==/UserScript==
 
