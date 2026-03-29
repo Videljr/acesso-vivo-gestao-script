@@ -1,13 +1,12 @@
 // ==UserScript==
 // @name         Acessos VG
 // @namespace    http://tampermonkey.net/
-// @version      1.2.2
-// @description  Modal com 5 colunas + Status colorido da planilha
+// @version      1.3.2
+// @description  Modal de Acessos + Status da planilha
 // @author       Videljr
 // @match        https://vivogestao.vivoempresas.com.br/Portal/*
 // @updateURL    https://raw.githubusercontent.com/Videljr/acesso-vivo-gestao-script/main/Acessos-Vivo-Gestao.user.js
 // @downloadURL  https://raw.githubusercontent.com/Videljr/acesso-vivo-gestao-script/main/Acessos-Vivo-Gestao.user.js
-// @updateInterval 3600
 // @grant        none
 // ==/UserScript==
 
@@ -603,39 +602,30 @@
             console.log('✅ Status atualizados!');
         }, 300);
     }
-        function preencherLogin(conta) {
-        const campoUsuario = document.querySelector('input[type="text"]');
-        const campoSenha = document.querySelector('input[type="password"]');
+function preencherLogin(conta) {
+    const campoUsuario = document.querySelector('input[type="text"]');
+    const campoSenha = document.querySelector('input[type="password"]');
 
-        if (campoUsuario && campoSenha) {
-            campoUsuario.value = conta.usuario;
-            campoSenha.value = conta.senha;
+    if (campoUsuario && campoSenha) {
+        campoUsuario.value = conta.usuario;
+        campoSenha.value = conta.senha;
 
-            ['input', 'change'].forEach(evento => {
-                campoUsuario.dispatchEvent(new Event(evento, { bubbles: true }));
-                campoSenha.dispatchEvent(new Event(evento, { bubbles: true }));
-            });
+        ['input', 'change'].forEach(evento => {
+            campoUsuario.dispatchEvent(new Event(evento, { bubbles: true }));
+            campoSenha.dispatchEvent(new Event(evento, { bubbles: true }));
+        });
 
-            campoUsuario.style.borderColor = '#660099';
-            campoSenha.style.borderColor = '#660099';
+        campoUsuario.style.borderColor = '#660099';
+        campoSenha.style.borderColor = '#660099';
 
-            fecharModal();
+        fecharModal();
 
-            setTimeout(() => {
-                const botaoEntrar = document.querySelector('#botao_entrar button[type="submit"]') || document.querySelector('button[type="submit"]') || document.querySelector('#botao_entrar');
-                if (botaoEntrar) botaoEntrar.click();
-                else {
-                    const form = campoUsuario.closest('form');
-                    if (form) form.submit();
-                }
-                setTimeout(() => {
-                    campoUsuario.style.borderColor = '';
-                    campoSenha.style.borderColor = '';
-                }, 500);
-            }, 300);
-        }
+        setTimeout(() => {
+            campoUsuario.style.borderColor = '';
+            campoSenha.style.borderColor = '';
+        }, 500);
     }
-
+}
     function fecharModal() {
         const modal = document.getElementById('vivoLoginModal');
         if (modal) {
