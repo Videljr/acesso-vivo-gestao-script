@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Acessos VG
 // @namespace    http://tampermonkey.net/
-// @version      1.3.2
+// @version      1.3.3
 // @description  Modal de Acessos + Status da planilha
 // @author       Videljr
 // @match        https://vivogestao.vivoempresas.com.br/Portal/*
@@ -15,11 +15,11 @@
 
     const contasPorCNPJ = {
         "NALDO SAT": [
-            { nome: "0455828133", usuario: "0455828133", senha: "0455828133" },
-            { nome: "0459325639", usuario: "NALDOSAT5639", senha: "293735639" },
-            { nome: "0453979554", usuario: "NALDOSAT9554", senha: "293739554" },
-            { nome: "0444346918", usuario: "NALDOSAT6918", senha: "293736918" },
-            { nome: "0450619128", usuario: "NALDOSAT9128", senha: "293739128" }
+            { nome: "0455828133", usuario: "04558281330", senha: "qre8386y" },
+            { nome: "0459325639", usuario: "04593256390", senha: "cI4TT9QU7c" },
+            { nome: "0453979554", usuario: "04539795540", senha: "65nD80YoXV" },
+            { nome: "0444346918", usuario: "04443469180", senha: "hH9j8d2AvH" },
+            { nome: "0450619128", usuario: "04506191280", senha: "0At58o5DpY" }
         ],
         "STUDIO MATHEUS": [
             { nome: "0452109744", usuario: "045210974400", senha: "508309744" },
@@ -30,17 +30,17 @@
             { nome: "0466121938", usuario: "0466121938", senha: "508301938" }
         ],
         "F DE ASSIS": [
-            { nome: "0463297834", usuario: "0463297834", senha: "352687834" },
+            { nome: "0463297834", usuario: "04632978340", senha: "dT688igkFA" },
             { nome: "0451176465", usuario: "FDEASSIS02", senha: "352686465" },
             { nome: "0443889484", usuario: "ASSIS_9484", senha: "CONECTA" },
-            { nome: "0461401781", usuario: "0461401781", senha: "352681781" }
+            { nome: "0461401781", usuario: "04614017810", senha: "15E1o9KLvg" }
         ],
         "CONNECTA": [
             { nome: "0469102728", usuario: "CONNECTA2728", senha: "641142728" },
             { nome: "0469103350", usuario: "connecta3350", senha: "0469103350" }
         ],
         "CN ENGENHARIA": [
-            { nome: "0468571160", usuario: "0468571160", senha: "0468571160" },
+            { nome: "0468571160", usuario: "0468571160", senha: "Maju2026" },
             { nome: "0469296149", usuario: "0469296149", senha: "Maju2026" },
             { nome: "0469301552", usuario: "0469301552", senha: "Maju2026" }
         ]
