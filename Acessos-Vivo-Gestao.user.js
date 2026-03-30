@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Acessos VG
 // @namespace    http://tampermonkey.net/
-// @version      1.3.3
+// @version      1.4.3
 // @description  Modal de Acessos + Status da planilha
 // @author       Videljr
 // @match        https://vivogestao.vivoempresas.com.br/Portal/*
@@ -15,34 +15,34 @@
 
     const contasPorCNPJ = {
         "NALDO SAT": [
-            { nome: "0455828133", usuario: "04558281330", senha: "qre8386y" },
-            { nome: "0459325639", usuario: "04593256390", senha: "cI4TT9QU7c" },
-            { nome: "0453979554", usuario: "04539795540", senha: "65nD80YoXV" },
-            { nome: "0444346918", usuario: "04443469180", senha: "hH9j8d2AvH" },
-            { nome: "0450619128", usuario: "04506191280", senha: "0At58o5DpY" }
+            { nome: "0455828133" },
+            { nome: "0459325639" },
+            { nome: "0453979554" },
+            { nome: "0444346918" },
+            { nome: "0450619128" }
         ],
         "STUDIO MATHEUS": [
-            { nome: "0452109744", usuario: "045210974400", senha: "508309744" },
-            { nome: "0454860388", usuario: "STUDIO_0388", senha: "508300388" },
-            { nome: "0444225746", usuario: "studiomatheu", senha: "508305746" },
-            { nome: "0457460616", usuario: "STUDIO_0616", senha: "508300616" },
-            { nome: "0462105797", usuario: "0462105797", senha: "508305797" },
-            { nome: "0466121938", usuario: "0466121938", senha: "508301938" }
+            { nome: "0452109744" },
+            { nome: "0454860388" },
+            { nome: "0444225746" },
+            { nome: "0457460616" },
+            { nome: "0462105797" },
+            { nome: "0466121938" }
         ],
         "F DE ASSIS": [
-            { nome: "0463297834", usuario: "04632978340", senha: "dT688igkFA" },
-            { nome: "0451176465", usuario: "FDEASSIS02", senha: "352686465" },
-            { nome: "0443889484", usuario: "ASSIS_9484", senha: "CONECTA" },
-            { nome: "0461401781", usuario: "04614017810", senha: "15E1o9KLvg" }
+            { nome: "0463297834" },
+            { nome: "0451176465" },
+            { nome: "0443889484" },
+            { nome: "0461401781" }
         ],
         "CONNECTA": [
-            { nome: "0469102728", usuario: "CONNECTA2728", senha: "641142728" },
-            { nome: "0469103350", usuario: "connecta3350", senha: "0469103350" }
+            { nome: "0469102728" },
+            { nome: "0469103350" }
         ],
         "CN ENGENHARIA": [
-            { nome: "0468571160", usuario: "0468571160", senha: "Maju2026" },
-            { nome: "0469296149", usuario: "0469296149", senha: "Maju2026" },
-            { nome: "0469301552", usuario: "0469301552", senha: "Maju2026" }
+            { nome: "0468571160" },
+            { nome: "0469296149" },
+            { nome: "0469301552" }
         ]
     };
 
@@ -50,12 +50,17 @@
 
     let statusDasContas = {};
     let observacoesDasContas = {};
+    let credenciaisDasContas = {}; // conta -> { usuario, senha }
 
     async function buscarStatusContas() {
         try {
             const response = await fetch(PLANILHA_URL);
             const csvText = await response.text();
             const linhas = csvText.split('\n');
+
+            statusDasContas = {};
+            observacoesDasContas = {};
+            credenciaisDasContas = {};
 
             for (let i = 0; i < linhas.length; i++) {
                 const linha = linhas[i];
@@ -79,6 +84,8 @@
                 colunas.push(valorAtual.trim());
 
                 const conta = colunas[2]?.replace(/"/g, '').trim();
+                const usuarioPlanilha = colunas[3]?.replace(/"/g, '').trim() || '';
+                const senhaPlanilha = colunas[4]?.replace(/"/g, '').trim() || '';
                 const observacao = colunas[6]?.replace(/"/g, '').trim() || '';
                 const status = colunas[7]?.replace(/"/g, '').trim() || '';
 
@@ -96,14 +103,22 @@
 
                     statusDasContas[conta] = cor;
                     observacoesDasContas[conta] = observacao;
+
+                    if (usuarioPlanilha && senhaPlanilha) {
+                        credenciaisDasContas[conta] = {
+                            usuario: usuarioPlanilha,
+                            senha: senhaPlanilha
+                        };
+                    }
                 }
             }
-            console.log('✅ Status carregados:', Object.keys(statusDasContas).length, 'contas');
+            console.log('✅ Status/credenciais carregados:', Object.keys(statusDasContas).length, 'contas');
         } catch (e) {
-            console.error('❌ Erro ao buscar status:', e);
+            console.error('❌ Erro ao buscar status/credenciais:', e);
         }
     }
-        const estilos = `<style>
+
+    const estilos = `<style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
         #vivoLoginModal {
@@ -209,7 +224,8 @@
             gap: 8px;
             z-index: 2;
         }
-                #vivoLoginModal .conta-nome {
+
+        #vivoLoginModal .conta-nome {
             flex: 1;
             display: flex;
             align-items: center;
@@ -334,7 +350,8 @@
             pointer-events: none;
             filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
         }
-                #vivoLoginModal .close-btn {
+
+        #vivoLoginModal .close-btn {
             position: absolute;
             top: 24px;
             right: 24px;
@@ -357,14 +374,14 @@
         }
 
         #vivoLoginModal .close-btn:hover {
-            background: rgba(102, 0, 153, 0.9);
+            background: #c92424;
             color: white;
-            transform: rotate(90deg) scale(1.1);
-            box-shadow: 0 4px 16px rgba(102, 0, 153, 0.3);
+            transform: scale(1.1);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
         }
 
         #vivoLoginModal .close-btn:active {
-            transform: rotate(90deg) scale(0.95);
+            transform: scale(0.95);
         }
 
         #vivoLoginModal .refresh-btn {
@@ -472,7 +489,8 @@
     </style>`;
 
     document.head.insertAdjacentHTML('beforeend', estilos);
-        function formatarNomeConta(nome) {
+
+    function formatarNomeConta(nome) {
         if (nome.length >= 4) {
             return `${nome.slice(0, -4)}<span class="bold">${nome.slice(-4)}</span>`;
         }
@@ -481,6 +499,35 @@
 
     function obterCorStatus(nome) {
         return statusDasContas[nome] || '#A9A9A9';
+    }
+
+    // função extraída para evitar no-loop-func
+    function construirContaItemHTML(cnpj, conta, index) {
+        const corFundo = obterCorStatus(conta.nome);
+        const observacao = observacoesDasContas[conta.nome] || 'Sem observações';
+
+        let statusClasse = 'neutro';
+        let statusIcone = 'https://cdn-icons-png.flaticon.com/512/162/162545.png';
+
+        if (corFundo === '#33CC00') {
+            statusClasse = 'ok';
+            statusIcone = 'https://cdn-icons-png.flaticon.com/512/33/33281.png';
+        } else if (corFundo === '#CC0000') {
+            statusClasse = 'erro';
+            statusIcone = 'https://cdn-icons-png.flaticon.com/512/159/159469.png';
+        } else if (corFundo === '#ECD172') {
+            statusClasse = 'renovando';
+            statusIcone = 'https://cdn-icons-png.flaticon.com/512/61/61444.png';
+        }
+
+        return `
+            <div class="conta-item" data-cnpj="${cnpj}" data-index="${index}">
+                <div class="conta-nome">${formatarNomeConta(conta.nome)}</div>
+                <div class="status-indicator ${statusClasse}" data-observacao="${observacao}">
+                    <img src="${statusIcone}" alt="Status">
+                </div>
+            </div>
+        `;
     }
 
     function criarBotaoFlutuante() {
@@ -510,31 +557,7 @@
         for (const [cnpj, contas] of Object.entries(contasPorCNPJ)) {
             let contasHTML = '';
             contas.forEach((conta, index) => {
-                const corFundo = obterCorStatus(conta.nome);
-                const observacao = observacoesDasContas[conta.nome] || 'Sem observações';
-
-                let statusClasse = 'neutro';
-                let statusIcone = 'https://cdn-icons-png.flaticon.com/512/162/162545.png';
-
-                if (corFundo === '#33CC00') {
-                    statusClasse = 'ok';
-                    statusIcone = 'https://cdn-icons-png.flaticon.com/512/33/33281.png';
-                } else if (corFundo === '#CC0000') {
-                    statusClasse = 'erro';
-                    statusIcone = 'https://cdn-icons-png.flaticon.com/512/159/159469.png';
-                } else if (corFundo === '#ECD172') {
-                    statusClasse = 'renovando';
-                    statusIcone = 'https://cdn-icons-png.flaticon.com/512/61/61444.png';
-                }
-
-                contasHTML += `
-                    <div class="conta-item" data-cnpj="${cnpj}" data-index="${index}">
-                        <div class="conta-nome">${formatarNomeConta(conta.nome)}</div>
-                        <div class="status-indicator ${statusClasse}" data-observacao="${observacao}">
-                            <img src="${statusIcone}" alt="Status">
-                        </div>
-                    </div>
-                `;
+                contasHTML += construirContaItemHTML(cnpj, conta, index);
             });
             colunasHTML += `<div class="coluna"><div class="coluna-titulo">${cnpj}</div>${contasHTML}</div>`;
         }
@@ -549,7 +572,10 @@
                 <div class="subtitle">Escolha a conta para fazer login no Vivo Gestão</div>
                 <div class="colunas-container">${colunasHTML}</div>
                 <div class="footer-info">
-                    💡 Verde = OK | Amarelo = Renovando | Vermelho = Erro | Cinza = Aguardando Informação
+                    <img src="https://cdn-icons-png.flaticon.com/512/10021/10021044.png"
+                        alt="Info"
+                        style="width:24px;height:24px;vertical-align:middle;margin-right:6px;">
+                    Dica: Verde = Renovação concluída | Amarelo = Renovando | Vermelho = Erro | Cinza = Aguardando Renovação
                 </div>
             </div>
         `;
@@ -557,9 +583,9 @@
         document.body.appendChild(modal);
 
         document.querySelectorAll('.conta-item').forEach(item => {
-            const nomeConta = item.querySelector('.conta-nome');
-            if (nomeConta) {
-                nomeConta.addEventListener('click', function(e) {
+            const nomeContaEl = item.querySelector('.conta-nome');
+            if (nomeContaEl) {
+                nomeContaEl.addEventListener('click', function(e) {
                     e.stopPropagation();
                     const cnpj = item.getAttribute('data-cnpj');
                     const index = item.getAttribute('data-index');
@@ -591,8 +617,6 @@
         }
 
         console.log('🔄 Atualizando status da planilha...');
-        statusDasContas = {};
-        observacoesDasContas = {};
 
         await buscarStatusContas();
 
@@ -602,13 +626,25 @@
             console.log('✅ Status atualizados!');
         }, 300);
     }
-function preencherLogin(conta) {
-    const campoUsuario = document.querySelector('input[type="text"]');
-    const campoSenha = document.querySelector('input[type="password"]');
 
-    if (campoUsuario && campoSenha) {
-        campoUsuario.value = conta.usuario;
-        campoSenha.value = conta.senha;
+    function preencherLogin(conta) {
+        const campoUsuario = document.querySelector('input[type="text"]');
+        const campoSenha = document.querySelector('input[type="password"]');
+
+        if (!campoUsuario || !campoSenha) return;
+
+        const credPlanilha = credenciaisDasContas[conta.nome];
+
+        const usuario = credPlanilha?.usuario || conta.usuario;
+        const senha = credPlanilha?.senha || conta.senha;
+
+        if (!usuario || !senha) {
+            alert('Usuário ou senha não encontrados para esta conta na planilha.');
+            return;
+        }
+
+        campoUsuario.value = usuario;
+        campoSenha.value = senha;
 
         ['input', 'change'].forEach(evento => {
             campoUsuario.dispatchEvent(new Event(evento, { bubbles: true }));
@@ -625,7 +661,7 @@ function preencherLogin(conta) {
             campoSenha.style.borderColor = '';
         }, 500);
     }
-}
+
     function fecharModal() {
         const modal = document.getElementById('vivoLoginModal');
         if (modal) {
@@ -649,16 +685,16 @@ function preencherLogin(conta) {
         if (estaNaPaginaDeLogin() && !document.getElementById('vivoLoginBtn')) inicializar();
     });
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', inicializar);
-} else {
-    inicializar();
-}
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', inicializar);
+    } else {
+        inicializar();
+    }
 
-window.addEventListener('load', () => {
-    inicializar();
-    observador.observe(document.body, { childList: true, subtree: true });
-});
+    window.addEventListener('load', () => {
+        inicializar();
+        observador.observe(document.body, { childList: true, subtree: true });
+    });
 
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
